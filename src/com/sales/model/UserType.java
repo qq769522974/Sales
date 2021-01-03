@@ -1,7 +1,8 @@
 package com.sales.model;
 
+//下拉用户类型模块
 public enum UserType {
-	 STUDENT("学生", 0),CANTEEN("食堂", 1),ADMIN("超级管理员", 2);
+	STUDENT("学生",0),CANTEEN("食堂",1),MANAGER("超级管理员",2);
 	private String name;
 	private int index;
 

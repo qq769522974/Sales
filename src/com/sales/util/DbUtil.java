@@ -3,7 +3,7 @@ package com.sales.util;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
+//数据库连接类
 public class DbUtil {
 	String dbUrl="jdbc:mysql://localhost:3306/sales?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai";
 	String dbUserName="root";//用户名

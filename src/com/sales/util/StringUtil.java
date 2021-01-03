@@ -1,5 +1,5 @@
 package com.sales.util;
-
+//¹¦ÄÜ£º¿ÕÅĞ¶Ï
 public class StringUtil {
 	public static boolean isEmpty(String str){
 		if("".equals(str)|| str == null){
