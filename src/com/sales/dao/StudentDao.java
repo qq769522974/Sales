@@ -29,7 +29,7 @@ public class StudentDao extends BaseDao {
 		}
 		return false;
 	}
-	//查
+	//查，列出学生
 	public List<Student> getStudentList(Student student){
 		List<Student> retList = new ArrayList<Student>();
 		StringBuffer sqlString = new StringBuffer("select * from student");
@@ -57,12 +57,33 @@ public class StudentDao extends BaseDao {
 		}
 		return retList;
 	}
+	//通过学生的id获取学生的信息
+	public Student search(Student student,String id){
+		String sqlString ="select * from student where studentId=?";
+		try {
+			PreparedStatement preparedStatement = con.prepareStatement(sqlString);
+			preparedStatement.setString(1, id);
+			ResultSet executeQuery = preparedStatement.executeQuery();
+			while(executeQuery.next()){
+				student.setStudentId(executeQuery.getString("studentId"));
+				student.setStudentName(executeQuery.getString("studentName"));
+				student.setStudentAddress(executeQuery.getString("studentAddress"));
+				student.setSex(executeQuery.getString("sex"));
+				student.setStudentPass(executeQuery.getString("studentPass"));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return student;
+	}
+	
 	//删除学生
-	public boolean delete(int id){
+	public boolean delete(String id){
 		String sql = "delete from student where studentId=?";
 		try {
 			PreparedStatement preparedStatement = con.prepareStatement(sql);
-			preparedStatement.setInt(1, id);
+			preparedStatement.setString(1, id);
 			if(preparedStatement.executeUpdate() > 0){
 				return true;
 			}
@@ -72,9 +93,9 @@ public class StudentDao extends BaseDao {
 		}
 		return false;
 	}
-	//改
-	public boolean update(Student student){
-		String sql = "update student set studentName=?, studentAddress=?,sex=?,studentPass=? where studentId=?";
+	//改(包括密码)
+	public boolean update2(Student student){
+		String sql = "update student set studentName=?,studentAddress=?,sex=?,studentPass=? where studentId=?";
 		try {
 			PreparedStatement preparedStatement = con.prepareStatement(sql);
 			preparedStatement.setString(1, student.getStudentName());
@@ -91,6 +112,24 @@ public class StudentDao extends BaseDao {
 		}
 		return false;
 	}
+	//改(不包括密码)
+		public boolean update1(Student student){
+			String sql = "update student set studentName=?,studentAddress=?,sex=? where studentId=?";
+			try {
+				PreparedStatement preparedStatement = con.prepareStatement(sql);
+				preparedStatement.setString(1, student.getStudentName());
+				preparedStatement.setString(2, student.getStudentAddress());
+				preparedStatement.setString(3, student.getSex());
+				preparedStatement.setString(4, student.getStudentId());
+				if(preparedStatement.executeUpdate() > 0){
+					return true;
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return false;
+		}
 	//学生登录
 	public Student login(Student student){
 		String sql = "select * from student where studentId=? and studentPass=?";

@@ -7,9 +7,11 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import com.sales.dao.CacheDao;
 import com.sales.dao.CanteenDao;
 import com.sales.dao.ManagerDao;
 import com.sales.dao.StudentDao;
+import com.sales.model.Cache;
 import com.sales.model.Canteen;
 import com.sales.model.Manager;
 import com.sales.model.Student;
@@ -28,6 +30,8 @@ import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import java.awt.event.ActionListener;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.awt.event.ActionEvent;
 import javax.swing.DefaultComboBoxModel;
 
@@ -59,7 +63,7 @@ public class LoginFrm extends JFrame {
 	 */
 	public LoginFrm() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 530, 396);
+		setBounds(100, 100, 433, 396);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -92,26 +96,42 @@ public class LoginFrm extends JFrame {
 	    userTypeComboBox = new JComboBox();
 		userTypeComboBox.setModel(new DefaultComboBoxModel(new UserType[] {UserType.STUDENT, UserType.CANTEEN, UserType.MANAGER}));
 		userTypeComboBox.setFont(new Font("微软雅黑", Font.PLAIN, 14));
+		
+		JButton loginButton_1 = new JButton("\u6CE8\u518C");
+		loginButton_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//注册
+				Register register=new Register();
+				register.setVisible(true);
+			}
+		});
+		loginButton_1.setFont(new Font("微软雅黑", Font.PLAIN, 16));
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPane.createSequentialGroup()
-					.addGap(78)
+					.addGap(70)
 					.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING, false)
 						.addComponent(lblNewLabel, GroupLayout.PREFERRED_SIZE, 210, GroupLayout.PREFERRED_SIZE)
 						.addGroup(gl_contentPane.createSequentialGroup()
 							.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING)
 								.addComponent(lblNewLabel_2)
 								.addComponent(lblNewLabel_2_1)
-								.addComponent(lblNewLabel_1, GroupLayout.PREFERRED_SIZE, 104, GroupLayout.PREFERRED_SIZE))
-							.addGap(18)
-							.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING, false)
-								.addComponent(passwordField, GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
-								.addComponent(textField, GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
-								.addComponent(loginButton, GroupLayout.PREFERRED_SIZE, 104, GroupLayout.PREFERRED_SIZE)
-								.addComponent(userTypeComboBox, GroupLayout.PREFERRED_SIZE, 112, GroupLayout.PREFERRED_SIZE))
-							.addGap(43)))
-					.addContainerGap(117, Short.MAX_VALUE))
+								.addComponent(lblNewLabel_1, GroupLayout.PREFERRED_SIZE, 104, GroupLayout.PREFERRED_SIZE)
+								.addComponent(loginButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+							.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+								.addGroup(gl_contentPane.createSequentialGroup()
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING, false)
+										.addComponent(passwordField, GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
+										.addComponent(textField, GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
+										.addComponent(userTypeComboBox, GroupLayout.PREFERRED_SIZE, 112, GroupLayout.PREFERRED_SIZE))
+									.addPreferredGap(ComponentPlacement.RELATED))
+								.addGroup(Alignment.TRAILING, gl_contentPane.createSequentialGroup()
+									.addGap(39)
+									.addComponent(loginButton_1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+									.addGap(10)))))
+					.addContainerGap(83, Short.MAX_VALUE))
 		);
 		gl_contentPane.setVerticalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
@@ -131,7 +151,9 @@ public class LoginFrm extends JFrame {
 						.addComponent(lblNewLabel_2_1)
 						.addComponent(userTypeComboBox, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE))
 					.addGap(43)
-					.addComponent(loginButton, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
+					.addGroup(gl_contentPane.createParallelGroup(Alignment.BASELINE)
+						.addComponent(loginButton, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
+						.addComponent(loginButton_1, GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
 					.addGap(55))
 		);
 		contentPane.setLayout(gl_contentPane);
@@ -153,8 +175,6 @@ public class LoginFrm extends JFrame {
 			JOptionPane.showMessageDialog(this, "密码不能为空！");
 			return;
 		}
-		//管理员登录
-		Manager manager = null;
 		if("学生".equals(selectedItem.getName())){
 			//学生登录
 			Student student = null; 
@@ -163,11 +183,13 @@ public class LoginFrm extends JFrame {
 			studentTmp.setStudentId(userID);
 			studentTmp.setStudentPass(userPassword);
 			student = studentDao.login(studentTmp);
-			studentDao.closeDao();
 			if(student == null){
 				JOptionPane.showMessageDialog(this, "用户名或密码错误！");
 				return;
 			}
+			student = studentDao.search(studentTmp,userID);
+			studentDao.closeDao();
+			addCache(student,userID);//添加缓存
 			JOptionPane.showMessageDialog(this, "登录成功！");
 			this.dispose();
 			new MainFrm().setVisible(true);
@@ -190,6 +212,7 @@ public class LoginFrm extends JFrame {
 			new CanteenFrm().setVisible(true);
 		}else{
 			//管理员登录
+			Manager manager = null;
 			ManagerDao managerDao = new ManagerDao();
 			Manager managerTmp = new Manager();
 			managerTmp.setManagerId(userID);
@@ -206,5 +229,24 @@ public class LoginFrm extends JFrame {
 		}
 		
 	}
-
+	//添加缓存
+	private void addCache(Student student,String UserId) {
+		StudentDao studentDao=new StudentDao();
+		studentDao.search(student,UserId);
+		String name=student.getStudentName();
+		String id=student.getStudentId();
+		String sex=student.getSex();
+		String password=student.getStudentPass();
+		String address=student.getStudentAddress();
+		Cache cache=new Cache();
+		cache.setAddress(address);
+		cache.setId(id);
+		cache.setName(name);
+		cache.setPassword(password);
+		cache.setSex(sex);
+		CacheDao cacheDao=new CacheDao();
+		cacheDao.addCache(cache);
+		cacheDao.closeDao();
+		
+	}
 }

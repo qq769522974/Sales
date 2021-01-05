@@ -5,7 +5,7 @@ public class Food{
 	
 	private String foodId;
 	private String foodName;
-	private Double price;
+	private String price;
 	private int number;
 	String createTime;
 	public String getFoodId() {
@@ -20,10 +20,10 @@ public class Food{
 	public void setFoodName(String foodName) {
 		this.foodName = foodName;
 	}
-	public Double getPrice() {
+	public String getPrice() {
 		return price;
 	}
-	public void setPrice(Double price) {
+	public void setPrice(String price) {
 		this.price = price;
 	}
 	public int getNumber() {
